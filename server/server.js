@@ -17,7 +17,12 @@ async function start() {
     console.log('Database synced');
     httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   } catch (err) {
-    console.error('Failed to start server:', err);
+    console.error('=== SERVER STARTUP FAILED ===');
+    console.error('Error:', err.message);
+    console.error('DB_HOST:', process.env.DB_HOST || '(not set — will use SQLite)');
+    console.error('DB_NAME:', process.env.DB_NAME || '(not set)');
+    console.error('DB_USER:', process.env.DB_USER || '(not set)');
+    console.error('DB_PASSWORD:', process.env.DB_PASSWORD ? '(set)' : '(not set)');
     process.exit(1);
   }
 }
