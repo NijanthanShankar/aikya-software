@@ -29,7 +29,7 @@ app.use('/api/live', require('./routes/live'));
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Serve React frontend in production
-const clientDist = path.join(__dirname, '../../client/dist');
+const clientDist = path.join(__dirname, '../../dist');
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
   app.get('*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
