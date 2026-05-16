@@ -9,16 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOSTINGER_HOST }}
-          username: ${{ secrets.HOSTINGER_USERNAME }}
-          key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          port: ${{ secrets.HOSTINGER_PORT }}
-          script: |
-            cd ~/domains/courses.aikyafertility.com/nodejs
-            git pull origin main
-            cd client && npm install --include=dev && node node_modules/vite/bin/vite.js build && cd ..
-            cd server && npm install && cd ..
-            mkdir -p tmp && touch tmp/restart.txt
+      - name: Trigger deploy webhook
+        run: |
+          curl -X POST https://courses.aikyafertility.com/webhook/deploy \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: sha256=skip" \
+            -d '{"ref":"refs/heads/main"}' \
+            --max-time 10 || true
