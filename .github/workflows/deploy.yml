@@ -16,6 +16,7 @@ jobs:
           username: ${{ secrets.HOSTINGER_USERNAME }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           port: ${{ secrets.HOSTINGER_PORT }}
+          fingerprint: 659DFQPj8cwAy+zhpKdiFT+Kxrlh6h0DW8cF0SzhKJk
           script: |
             cd /home/u861042247/nodejs
             git pull origin main
