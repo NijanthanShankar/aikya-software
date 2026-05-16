@@ -17,7 +17,8 @@ jobs:
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
-            cd /home/u861042247/nodejs
+            cd ~/domains/courses.aikyafertility.com/nodejs
             git pull origin main
-            npm run build
+            cd client && npm install --include=dev && node node_modules/vite/bin/vite.js build && cd ..
+            cd server && npm install && cd ..
             mkdir -p tmp && touch tmp/restart.txt
