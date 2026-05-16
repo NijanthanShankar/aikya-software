@@ -1,30 +1,10 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Module = sequelize.define('Module', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  title: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  order: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-  },
-  courseId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-}, {
-  tableName: 'modules',
-});
+const moduleSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: String,
+  order: { type: Number, default: 0 },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+}, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
-module.exports = Module;
+module.exports = mongoose.model('Module', moduleSchema);

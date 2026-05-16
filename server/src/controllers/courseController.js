@@ -1,38 +1,34 @@
-const { Op } = require('sequelize');
 const slugify = require('../utils/slugify');
-const { Course, Module, Lesson, Enrollment, User } = require('../models');
+const { Course, Module, Lesson, Enrollment } = require('../models');
 
 exports.getAllCourses = async (req, res) => {
   try {
     const { search, category, level, page = 1, limit = 12, sort = 'createdAt' } = req.query;
     const where = { status: 'published' };
 
-    if (search) where.title = { [Op.like]: `%${search}%` };
+    if (search) where.title = { $regex: search, $options: 'i' };
     if (category) where.category = category;
     if (level) where.level = level;
 
     const sortMap = {
-      createdAt: [['createdAt', 'DESC']],
-      popular: [['totalEnrollments', 'DESC']],
-      rating: [['rating', 'DESC']],
-      price_asc: [['price', 'ASC']],
-      price_desc: [['price', 'DESC']],
+      createdAt: { createdAt: -1 },
+      popular: { totalEnrollments: -1 },
+      rating: { rating: -1 },
+      price_asc: { price: 1 },
+      price_desc: { price: -1 },
     };
 
-    const { count, rows } = await Course.findAndCountAll({
-      where,
-      include: [{ model: User, as: 'instructor', attributes: ['id', 'name', 'avatar'] }],
-      order: sortMap[sort] || sortMap.createdAt,
-      limit: parseInt(limit),
-      offset: (parseInt(page) - 1) * parseInt(limit),
-    });
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const [courses, count] = await Promise.all([
+      Course.find(where)
+        .populate('instructor', 'id name avatar')
+        .sort(sortMap[sort] || sortMap.createdAt)
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Course.countDocuments(where),
+    ]);
 
-    res.json({
-      courses: rows,
-      total: count,
-      page: parseInt(page),
-      totalPages: Math.ceil(count / parseInt(limit)),
-    });
+    res.json({ courses, total: count, page: parseInt(page), totalPages: Math.ceil(count / parseInt(limit)) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -40,30 +36,27 @@ exports.getAllCourses = async (req, res) => {
 
 exports.getCourseBySlug = async (req, res) => {
   try {
-    const course = await Course.findOne({
-      where: { slug: req.params.slug },
-      include: [
-        { model: User, as: 'instructor', attributes: ['id', 'name', 'avatar', 'bio'] },
-        {
-          model: Module, as: 'modules',
-          include: [{
-            model: Lesson, as: 'lessons',
-            attributes: ['id', 'title', 'type', 'duration', 'isFreePreview', 'order'],
-            order: [['order', 'ASC']],
-          }],
-          order: [['order', 'ASC']],
-        },
-      ],
-    });
+    const course = await Course.findOne({ slug: req.params.slug })
+      .populate('instructor', 'id name avatar bio');
     if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    const modules = await Module.find({ courseId: course._id }).sort({ order: 1 });
+    const lessons = await Lesson.find({ courseId: course._id })
+      .select('id title type duration isFreePreview order moduleId')
+      .sort({ order: 1 });
+
+    const modulesWithLessons = modules.map((m) => ({
+      ...m.toJSON(),
+      lessons: lessons.filter((l) => l.moduleId.toString() === m._id.toString()),
+    }));
 
     let isEnrolled = false;
     if (req.user) {
-      const enrollment = await Enrollment.findOne({ where: { userId: req.user.id, courseId: course.id } });
+      const enrollment = await Enrollment.findOne({ userId: req.user._id, courseId: course._id });
       isEnrolled = !!enrollment;
     }
 
-    res.json({ course, isEnrolled });
+    res.json({ course: { ...course.toJSON(), modules: modulesWithLessons }, isEnrolled });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -71,21 +64,19 @@ exports.getCourseBySlug = async (req, res) => {
 
 exports.getCourseById = async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id, {
-      include: [
-        { model: User, as: 'instructor', attributes: ['id', 'name', 'avatar', 'bio'] },
-        {
-          model: Module, as: 'modules',
-          include: [{
-            model: Lesson, as: 'lessons',
-            order: [['order', 'ASC']],
-          }],
-          order: [['order', 'ASC']],
-        },
-      ],
-    });
+    const course = await Course.findById(req.params.id)
+      .populate('instructor', 'id name avatar bio');
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    res.json({ course });
+
+    const modules = await Module.find({ courseId: course._id }).sort({ order: 1 });
+    const lessons = await Lesson.find({ courseId: course._id }).sort({ order: 1 });
+
+    const modulesWithLessons = modules.map((m) => ({
+      ...m.toJSON(),
+      lessons: lessons.filter((l) => l.moduleId.toString() === m._id.toString()),
+    }));
+
+    res.json({ course: { ...course.toJSON(), modules: modulesWithLessons } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -97,11 +88,14 @@ exports.createCourse = async (req, res) => {
     const slug = await generateUniqueSlug(title);
 
     const course = await Course.create({
-      title, description, shortDescription, price: price || 0,
-      discountPrice: discountPrice || null, category, level, language,
+      title, description, shortDescription,
+      price: price || 0,
+      discountPrice: discountPrice || undefined,
+      category, level, language,
       isFree: isFree === 'true' || isFree === true,
-      slug, instructorId: req.user.id,
-      thumbnail: req.file ? `/uploads/thumbnails/${req.file.filename}` : null,
+      slug,
+      instructor: req.user._id,
+      thumbnail: req.file ? `/uploads/thumbnails/${req.file.filename}` : undefined,
     });
 
     res.status(201).json({ course });
@@ -112,9 +106,9 @@ exports.createCourse = async (req, res) => {
 
 exports.updateCourse = async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    if (course.instructorId !== req.user.id && req.user.role !== 'admin') {
+    if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -124,7 +118,8 @@ exports.updateCourse = async (req, res) => {
       updates.slug = await generateUniqueSlug(updates.title);
     }
 
-    await course.update(updates);
+    Object.assign(course, updates);
+    await course.save();
     res.json({ course });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -133,12 +128,12 @@ exports.updateCourse = async (req, res) => {
 
 exports.deleteCourse = async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    if (course.instructorId !== req.user.id && req.user.role !== 'admin') {
+    if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
-    await course.destroy();
+    await course.deleteOne();
     res.json({ message: 'Course deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -147,10 +142,7 @@ exports.deleteCourse = async (req, res) => {
 
 exports.getInstructorCourses = async (req, res) => {
   try {
-    const courses = await Course.findAll({
-      where: { instructorId: req.user.id },
-      order: [['createdAt', 'DESC']],
-    });
+    const courses = await Course.find({ instructor: req.user._id }).sort({ createdAt: -1 });
     res.json({ courses });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -159,12 +151,13 @@ exports.getInstructorCourses = async (req, res) => {
 
 exports.publishCourse = async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    if (course.instructorId !== req.user.id && req.user.role !== 'admin') {
+    if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
-    await course.update({ status: course.status === 'published' ? 'draft' : 'published' });
+    course.status = course.status === 'published' ? 'draft' : 'published';
+    await course.save();
     res.json({ course });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -174,7 +167,7 @@ exports.publishCourse = async (req, res) => {
 async function generateUniqueSlug(title) {
   let slug = slugify(title);
   let count = 0;
-  while (await Course.findOne({ where: { slug: count ? `${slug}-${count}` : slug } })) {
+  while (await Course.findOne({ slug: count ? `${slug}-${count}` : slug })) {
     count++;
   }
   return count ? `${slug}-${count}` : slug;

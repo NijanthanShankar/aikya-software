@@ -7,7 +7,7 @@ const signToken = (id) =>
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    const exists = await User.findOne({ where: { email } });
+    const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email already registered' });
 
     const allowedRoles = ['student', 'instructor'];
@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ email }).select('+password');
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -51,12 +51,10 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, bio } = req.body;
-    const updates = {};
-    if (name) updates.name = name;
-    if (bio !== undefined) updates.bio = bio;
-    if (req.file) updates.avatar = `/uploads/thumbnails/${req.file.filename}`;
-
-    await req.user.update(updates);
+    if (name) req.user.name = name;
+    if (bio !== undefined) req.user.bio = bio;
+    if (req.file) req.user.avatar = `/uploads/thumbnails/${req.file.filename}`;
+    await req.user.save();
     res.json({ user: req.user });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -66,11 +64,12 @@ exports.updateProfile = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findById(req.user.id).select('+password');
     if (!(await user.comparePassword(currentPassword))) {
       return res.status(400).json({ message: 'Current password is incorrect' });
     }
-    await user.update({ password: newPassword });
+    user.password = newPassword;
+    await user.save();
     res.json({ message: 'Password updated successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -1,61 +1,17 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Lesson = sequelize.define('Lesson', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  title: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  type: {
-    type: DataTypes.ENUM('video', 'text', 'quiz'),
-    defaultValue: 'video',
-  },
-  videoUrl: {
-    type: DataTypes.STRING(500),
-    allowNull: true,
-  },
-  videoKey: {
-    type: DataTypes.STRING(500),
-    allowNull: true,
-    comment: 'Local file path or storage key',
-  },
-  duration: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-    comment: 'Duration in seconds',
-  },
-  content: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-    comment: 'For text-type lessons',
-  },
-  order: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-  },
-  isFreePreview: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
-  moduleId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  courseId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-}, {
-  tableName: 'lessons',
-});
+const lessonSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: String,
+  type: { type: String, enum: ['video', 'text', 'quiz'], default: 'video' },
+  videoUrl: String,
+  videoKey: String,
+  duration: { type: Number, default: 0 },
+  content: String,
+  order: { type: Number, default: 0 },
+  isFreePreview: { type: Boolean, default: false },
+  moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+}, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
-module.exports = Lesson;
+module.exports = mongoose.model('Lesson', lessonSchema);

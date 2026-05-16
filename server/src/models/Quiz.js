@@ -1,41 +1,12 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Quiz = sequelize.define('Quiz', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  title: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  passingScore: {
-    type: DataTypes.INTEGER,
-    defaultValue: 60,
-    comment: 'Minimum percentage to pass',
-  },
-  timeLimit: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    comment: 'Time limit in minutes, null = no limit',
-  },
-  lessonId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    unique: true,
-  },
-  courseId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-}, {
-  tableName: 'quizzes',
-});
+const quizSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: String,
+  passingScore: { type: Number, default: 60 },
+  timeLimit: Number,
+  lessonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lesson', required: true, unique: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+}, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
-module.exports = Quiz;
+module.exports = mongoose.model('Quiz', quizSchema);

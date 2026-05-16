@@ -1,39 +1,12 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Question = sequelize.define('Question', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  text: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  type: {
-    type: DataTypes.ENUM('single', 'multiple', 'true_false'),
-    defaultValue: 'single',
-  },
-  options: {
-    type: DataTypes.JSON,
-    allowNull: false,
-    comment: '[{ id, text, isCorrect }]',
-  },
-  explanation: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  order: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-  },
-  quizId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-}, {
-  tableName: 'questions',
-});
+const questionSchema = new mongoose.Schema({
+  text: { type: String, required: true },
+  type: { type: String, enum: ['single', 'multiple', 'true_false'], default: 'single' },
+  options: { type: Array, required: true },
+  explanation: String,
+  order: { type: Number, default: 0 },
+  quizId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz', required: true },
+}, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
-module.exports = Question;
+module.exports = mongoose.model('Question', questionSchema);

@@ -1,36 +1,34 @@
-const { Progress, Lesson, Enrollment, Course } = require('../models');
+const { Progress, Lesson, Enrollment } = require('../models');
 
 exports.markLessonComplete = async (req, res) => {
   try {
     const { lessonId } = req.params;
-    const lesson = await Lesson.findByPk(lessonId);
+    const lesson = await Lesson.findById(lessonId);
     if (!lesson) return res.status(404).json({ message: 'Lesson not found' });
 
-    const enrollment = await Enrollment.findOne({ where: { userId: req.user.id, courseId: lesson.courseId } });
+    const enrollment = await Enrollment.findOne({ userId: req.user._id, courseId: lesson.courseId });
     if (!enrollment) return res.status(403).json({ message: 'Not enrolled in this course' });
 
-    const [progress, created] = await Progress.findOrCreate({
-      where: { userId: req.user.id, lessonId },
-      defaults: {
-        userId: req.user.id,
-        lessonId,
-        courseId: lesson.courseId,
-        completed: true,
-        completedAt: new Date(),
-      },
-    });
-
-    if (!created && !progress.completed) {
-      await progress.update({ completed: true, completedAt: new Date() });
+    let progress = await Progress.findOne({ userId: req.user._id, lessonId });
+    if (!progress) {
+      progress = await Progress.create({
+        userId: req.user._id, lessonId, courseId: lesson.courseId, completed: true, completedAt: new Date(),
+      });
+    } else if (!progress.completed) {
+      progress.completed = true;
+      progress.completedAt = new Date();
+      await progress.save();
     }
 
-    const totalLessons = await Lesson.count({ where: { courseId: lesson.courseId } });
-    const completedLessons = await Progress.count({
-      where: { userId: req.user.id, courseId: lesson.courseId, completed: true },
-    });
+    const [totalLessons, completedLessons] = await Promise.all([
+      Lesson.countDocuments({ courseId: lesson.courseId }),
+      Progress.countDocuments({ userId: req.user._id, courseId: lesson.courseId, completed: true }),
+    ]);
 
     if (totalLessons > 0 && completedLessons >= totalLessons) {
-      await enrollment.update({ status: 'completed', completedAt: new Date() });
+      enrollment.status = 'completed';
+      enrollment.completedAt = new Date();
+      await enrollment.save();
     }
 
     res.json({
@@ -50,22 +48,20 @@ exports.updateWatchTime = async (req, res) => {
   try {
     const { lessonId } = req.params;
     const { watchedSeconds } = req.body;
-
-    const lesson = await Lesson.findByPk(lessonId);
+    const lesson = await Lesson.findById(lessonId);
     if (!lesson) return res.status(404).json({ message: 'Lesson not found' });
 
-    const [progress] = await Progress.findOrCreate({
-      where: { userId: req.user.id, lessonId },
-      defaults: { userId: req.user.id, lessonId, courseId: lesson.courseId, watchedSeconds },
-    });
-
-    if (progress.watchedSeconds < watchedSeconds) {
+    let progress = await Progress.findOne({ userId: req.user._id, lessonId });
+    if (!progress) {
+      progress = await Progress.create({ userId: req.user._id, lessonId, courseId: lesson.courseId, watchedSeconds });
+    } else if (progress.watchedSeconds < watchedSeconds) {
       const autoComplete = lesson.duration > 0 && watchedSeconds >= lesson.duration * 0.9;
-      await progress.update({
-        watchedSeconds,
-        completed: progress.completed || autoComplete,
-        completedAt: !progress.completed && autoComplete ? new Date() : progress.completedAt,
-      });
+      progress.watchedSeconds = watchedSeconds;
+      if (!progress.completed && autoComplete) {
+        progress.completed = true;
+        progress.completedAt = new Date();
+      }
+      await progress.save();
     }
 
     res.json({ progress });
@@ -77,11 +73,13 @@ exports.updateWatchTime = async (req, res) => {
 exports.getCourseProgress = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const enrollment = await Enrollment.findOne({ where: { userId: req.user.id, courseId } });
+    const enrollment = await Enrollment.findOne({ userId: req.user._id, courseId });
     if (!enrollment) return res.status(403).json({ message: 'Not enrolled' });
 
-    const allProgress = await Progress.findAll({ where: { userId: req.user.id, courseId } });
-    const totalLessons = await Lesson.count({ where: { courseId } });
+    const [allProgress, totalLessons] = await Promise.all([
+      Progress.find({ userId: req.user._id, courseId }),
+      Lesson.countDocuments({ courseId }),
+    ]);
     const completedLessons = allProgress.filter((p) => p.completed).length;
 
     res.json({

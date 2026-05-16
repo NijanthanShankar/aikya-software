@@ -1,57 +1,17 @@
-const { DataTypes } = require('sequelize');
+const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const sequelize = require('../config/database');
 
-const LiveSession = sequelize.define('LiveSession', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  title: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  scheduledAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  duration: {
-    type: DataTypes.INTEGER,
-    defaultValue: 60,
-  },
-  status: {
-    type: DataTypes.ENUM('scheduled', 'live', 'ended'),
-    defaultValue: 'scheduled',
-  },
-  meetingId: {
-    type: DataTypes.STRING(100),
-    unique: true,
-    defaultValue: () => uuidv4(),
-  },
-  maxParticipants: {
-    type: DataTypes.INTEGER,
-    defaultValue: 100,
-  },
-  courseId: {
-    type: DataTypes.UUID,
-    allowNull: true,
-  },
-  instructorId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  isPublic: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
-  },
-}, {
-  tableName: 'live_sessions',
-  timestamps: true,
-});
+const liveSessionSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: String,
+  scheduledAt: { type: Date, required: true },
+  duration: { type: Number, default: 60 },
+  status: { type: String, enum: ['scheduled', 'live', 'ended'], default: 'scheduled' },
+  meetingId: { type: String, unique: true, default: () => uuidv4() },
+  maxParticipants: { type: Number, default: 100 },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+  instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  isPublic: { type: Boolean, default: true },
+}, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
-module.exports = LiveSession;
+module.exports = mongoose.model('LiveSession', liveSessionSchema);

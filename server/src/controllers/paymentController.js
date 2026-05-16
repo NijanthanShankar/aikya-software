@@ -21,34 +21,28 @@ function generateChecksum(payload, saltKey, saltIndex) {
 exports.initiatePayment = async (req, res) => {
   try {
     const { courseId } = req.body;
-    const course = await Course.findByPk(courseId);
+    const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ message: 'Course not found' });
 
-    const existingEnrollment = await Enrollment.findOne({ where: { userId: req.user.id, courseId } });
+    const existingEnrollment = await Enrollment.findOne({ userId: req.user._id, courseId });
     if (existingEnrollment) return res.status(400).json({ message: 'Already enrolled' });
 
     const amount = course.discountPrice || course.price;
     if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid course price' });
 
     const merchantTransactionId = `MT_${uuidv4().replace(/-/g, '').toUpperCase().slice(0, 30)}`;
-
     const payment = await Payment.create({
-      userId: req.user.id,
-      courseId,
-      amount,
-      currency: 'INR',
-      merchantTransactionId,
-      status: 'pending',
+      userId: req.user._id, courseId, amount, currency: 'INR', merchantTransactionId, status: 'pending',
     });
 
     const payload = {
       merchantId: process.env.PHONEPE_MERCHANT_ID,
       merchantTransactionId,
-      merchantUserId: `USER_${req.user.id.replace(/-/g, '').slice(0, 20)}`,
+      merchantUserId: `USER_${req.user.id.slice(0, 20)}`,
       amount: Math.round(amount * 100),
       redirectUrl: `${process.env.CLIENT_URL}/payment/verify?txnId=${merchantTransactionId}`,
       redirectMode: 'REDIRECT',
-      callbackUrl: `${process.env.CLIENT_URL?.replace('localhost:5173', 'localhost:5000')}/api/payments/callback`,
+      callbackUrl: `${process.env.CLIENT_URL}/api/payments/callback`,
       paymentInstrument: { type: 'PAY_PAGE' },
     };
 
@@ -58,12 +52,7 @@ exports.initiatePayment = async (req, res) => {
     const response = await axios.post(
       `${getPhonePeBase()}/pg/v1/pay`,
       { request: base64Payload },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-VERIFY': checksum,
-        },
-      }
+      { headers: { 'Content-Type': 'application/json', 'X-VERIFY': checksum } }
     );
 
     const redirectUrl = response.data?.data?.instrumentResponse?.redirectInfo?.url;
@@ -77,13 +66,13 @@ exports.initiatePayment = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   try {
     const { txnId } = req.query;
-    const payment = await Payment.findOne({ where: { merchantTransactionId: txnId } });
+    const payment = await Payment.findOne({ merchantTransactionId: txnId });
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
-    const checksum = crypto
-      .createHash('sha256')
-      .update(`/pg/v1/status/${process.env.PHONEPE_MERCHANT_ID}/${txnId}${process.env.PHONEPE_SALT_KEY}`)
-      .digest('hex') + `###${process.env.PHONEPE_SALT_INDEX}`;
+    const checksum =
+      crypto.createHash('sha256')
+        .update(`/pg/v1/status/${process.env.PHONEPE_MERCHANT_ID}/${txnId}${process.env.PHONEPE_SALT_KEY}`)
+        .digest('hex') + `###${process.env.PHONEPE_SALT_INDEX}`;
 
     const response = await axios.get(
       `${getPhonePeBase()}/pg/v1/status/${process.env.PHONEPE_MERCHANT_ID}/${txnId}`,
@@ -93,20 +82,17 @@ exports.verifyPayment = async (req, res) => {
     const data = response.data;
     const success = data.success && data.code === 'PAYMENT_SUCCESS';
 
-    await payment.update({
-      status: success ? 'success' : 'failed',
-      phonepeTransactionId: data?.data?.transactionId,
-      paymentMethod: data?.data?.paymentInstrument?.type,
-      gatewayResponse: data,
-    });
+    payment.status = success ? 'success' : 'failed';
+    payment.phonepeTransactionId = data?.data?.transactionId;
+    payment.paymentMethod = data?.data?.paymentInstrument?.type;
+    payment.gatewayResponse = data;
+    await payment.save();
 
     if (success) {
-      const [enrollment, created] = await Enrollment.findOrCreate({
-        where: { userId: payment.userId, courseId: payment.courseId },
-        defaults: { userId: payment.userId, courseId: payment.courseId, paymentId: payment.id },
-      });
-      if (created) {
-        await Course.increment('totalEnrollments', { by: 1, where: { id: payment.courseId } });
+      const existing = await Enrollment.findOne({ userId: payment.userId, courseId: payment.courseId });
+      if (!existing) {
+        await Enrollment.create({ userId: payment.userId, courseId: payment.courseId, paymentId: payment._id });
+        await Course.findByIdAndUpdate(payment.courseId, { $inc: { totalEnrollments: 1 } });
       }
     }
 
@@ -118,20 +104,14 @@ exports.verifyPayment = async (req, res) => {
 };
 
 exports.handleCallback = async (req, res) => {
-  try {
-    res.status(200).json({ message: 'Callback received' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.status(200).json({ message: 'Callback received' });
 };
 
 exports.getPaymentHistory = async (req, res) => {
   try {
-    const payments = await Payment.findAll({
-      where: { userId: req.user.id },
-      include: [{ model: Course, attributes: ['id', 'title', 'thumbnail', 'slug'] }],
-      order: [['createdAt', 'DESC']],
-    });
+    const payments = await Payment.find({ userId: req.user._id })
+      .populate('courseId', 'id title thumbnail slug')
+      .sort({ createdAt: -1 });
     res.json({ payments });
   } catch (err) {
     res.status(500).json({ message: err.message });

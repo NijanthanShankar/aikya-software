@@ -1,39 +1,14 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Progress = sequelize.define('Progress', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  userId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  courseId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  lessonId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  completed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
-  watchedSeconds: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-  },
-  completedAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-}, {
-  tableName: 'progress',
-  indexes: [{ unique: true, fields: ['userId', 'lessonId'] }],
-});
+const progressSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  lessonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lesson', required: true },
+  completed: { type: Boolean, default: false },
+  watchedSeconds: { type: Number, default: 0 },
+  completedAt: Date,
+}, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
-module.exports = Progress;
+progressSchema.index({ userId: 1, lessonId: 1 }, { unique: true });
+
+module.exports = mongoose.model('Progress', progressSchema);
