@@ -17,7 +17,7 @@ jobs:
           password: ${{ secrets.HOSTINGER_PASSWORD }}
           port: ${{ secrets.HOSTINGER_PORT }}
           script: |
-            cd ~/domains/courses.aikyafertility.com/public_html
+            cd /home/u861042247/nodejs
             git pull origin main
             npm run build
             mkdir -p tmp && touch tmp/restart.txt
