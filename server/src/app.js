@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 
@@ -27,14 +26,6 @@ app.use('/api/lessons', require('./routes/lessons'));
 app.use('/api/live', require('./routes/live'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-app.use('/webhook', require('./routes/webhook'));
-
-// Serve React frontend in production
-const clientDist = path.join(__dirname, '../../dist');
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
-  app.get('*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
-}
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

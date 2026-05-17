@@ -16,7 +16,7 @@ async function start() {
   } catch (err) {
     console.error('=== SERVER STARTUP FAILED ===');
     console.error('Error:', err.message);
-    console.error('MONGODB_URI:', process.env.MONGODB_URI ? '(set)' : '(NOT SET — add this in Hostinger env vars)');
+    console.error('MONGODB_URI:', process.env.MONGODB_URI ? '(set)' : '(NOT SET — add this in Render environment variables)');
     process.exit(1);
   }
 }
