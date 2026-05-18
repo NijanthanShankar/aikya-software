@@ -45,7 +45,7 @@ export default function Register() {
           </div>
           <h2 className="text-3xl font-extrabold mb-4 tracking-tight leading-snug">Start Your<br />Learning Journey</h2>
           <p className="text-white/55 leading-relaxed text-sm">
-            Join 12,000+ learners on Aikya Courses. Access expert content, attend live sessions, and build career-changing skills.
+            Join Aikya Academy — Fellowship programs and certification courses in Reproductive Medicine, Gynecology, and Laparoscopy by Aikya Fertility & Research Centre.
           </p>
           <div className="mt-8 space-y-3">
             {['500+ expert-led courses', 'Live interactive classes', 'Certificates of completion'].map((f) => (
@@ -67,7 +67,7 @@ export default function Register() {
             <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
               <GraduationCap size={22} className="text-white" />
             </div>
-            <span className="font-extrabold text-xl text-ink">AikyaCourses</span>
+            <span className="font-extrabold text-xl text-ink">AikyaAcademy</span>
           </Link>
 
           <div className="mb-6">

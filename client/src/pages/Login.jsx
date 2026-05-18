@@ -50,7 +50,7 @@ export default function Login() {
             <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
               <GraduationCap size={22} className="text-white" />
             </div>
-            <span className="font-extrabold text-xl text-ink">AikyaCourses</span>
+            <span className="font-extrabold text-xl text-ink">AikyaAcademy</span>
           </Link>
 
           <div className="mb-8">

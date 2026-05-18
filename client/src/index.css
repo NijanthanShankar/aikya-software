@@ -87,14 +87,14 @@
   .stat-card { @apply card-padded flex flex-col gap-1; }
 
   /* ── Scrollbar ── */
-  .scrollbar-thin  { scrollbar-width: thin; scrollbar-color: #c7d2fe transparent; }
+  .scrollbar-thin  { scrollbar-width: thin; scrollbar-color: #99e7e7 transparent; }
   .scrollbar-thin::-webkit-scrollbar { width: 4px; }
   .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-primary-200 rounded-full; }
 }
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-violet-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-pink-500;
   }
   .bg-glass {
     background: rgba(255,255,255,.8);

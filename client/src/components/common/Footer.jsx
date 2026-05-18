@@ -26,10 +26,10 @@ export default function Footer() {
               <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center">
                 <GraduationCap size={20} className="text-white" />
               </div>
-              <span className="font-extrabold text-lg text-white tracking-tight">AikyaCourses</span>
+              <span className="font-extrabold text-lg text-white tracking-tight">AikyaAcademy</span>
             </Link>
             <p className="text-sm leading-relaxed max-w-xs text-white/50">
-              The modern platform for learning and teaching. Expert-led courses, live sessions, and hands-on projects.
+              Fellowship programs and certification courses in Reproductive Medicine, Gynecology, and Laparoscopy by Aikya Fertility & Research Centre.
             </p>
             <div className="flex items-center gap-3 mt-5">
               {[Twitter, Linkedin, Youtube, Github].map((Icon, i) => (
@@ -55,7 +55,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
-          <p>© {new Date().getFullYear()} Aikya Courses. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Aikya Academy. All rights reserved.</p>
           <p>Crafted with ❤️ for learners worldwide</p>
         </div>
       </div>

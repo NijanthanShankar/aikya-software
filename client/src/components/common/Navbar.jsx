@@ -47,7 +47,7 @@ export default function Navbar() {
               <GraduationCap size={20} className="text-white" />
             </div>
             <span className="font-extrabold text-lg text-ink tracking-tight hidden sm:block">
-              Aikya<span className="text-gradient">Courses</span>
+              Aikya<span className="text-gradient">Academy</span>
             </span>
           </Link>
 

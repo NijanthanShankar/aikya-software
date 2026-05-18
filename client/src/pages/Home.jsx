@@ -174,7 +174,7 @@ export default function Home() {
       <section className="py-14 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="section-title">Why Aikya Courses?</h2>
+            <h2 className="section-title">Why Aikya Academy?</h2>
             <p className="section-sub">Everything you need to succeed, in one place</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
