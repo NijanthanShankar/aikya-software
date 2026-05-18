@@ -42,11 +42,8 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src="/logo.png" alt="Aikya Academy" className="h-9 w-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
-            <span className="font-extrabold text-lg text-ink tracking-tight hidden sm:block">
-              Aikya<span className="text-gradient">Academy</span>
-            </span>
+          <Link to="/" className="flex-shrink-0">
+            <img src="/logo.png" alt="Aikya Academy" className="h-12 w-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
           </Link>
 
           {/* Desktop nav */}
