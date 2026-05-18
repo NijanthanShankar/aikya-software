@@ -18,6 +18,7 @@ import PaymentVerify       from './pages/PaymentVerify';
 import LiveSessions        from './pages/LiveSessions';
 import LiveRoom            from './pages/LiveRoom';
 import ScheduleLiveSession from './pages/ScheduleLiveSession';
+import Profile             from './pages/Profile';
 
 /* Layout that wraps a page with Navbar + Footer */
 function MainLayout() {
@@ -66,6 +67,7 @@ function AppRoutes() {
         {/* Protected pages */}
         <Route element={<RequireAuth />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile"   element={<Profile />} />
         </Route>
 
         <Route element={<RequireAuth roles={['instructor','admin']} />}>

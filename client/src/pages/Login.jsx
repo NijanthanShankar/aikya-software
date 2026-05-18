@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -47,9 +47,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <Link to="/" className="flex items-center gap-2.5 mb-8 lg:hidden justify-center">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <GraduationCap size={22} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="Aikya Academy" className="h-10 w-auto object-contain" />
             <span className="font-extrabold text-xl text-ink">AikyaAcademy</span>
           </Link>
 

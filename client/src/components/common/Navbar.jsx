@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  GraduationCap, Search, Bell, ChevronDown, LayoutDashboard,
+  ChevronDown, LayoutDashboard,
   User, LogOut, Menu, X, Video, BookOpen, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -42,10 +42,8 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-              <GraduationCap size={20} className="text-white" />
-            </div>
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+            <img src="/logo.png" alt="Aikya Academy" className="h-9 w-auto object-contain" />
             <span className="font-extrabold text-lg text-ink tracking-tight hidden sm:block">
               Aikya<span className="text-gradient">Academy</span>
             </span>

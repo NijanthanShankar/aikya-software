@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { GraduationCap, Twitter, Linkedin, Youtube, Github } from 'lucide-react';
+import { Twitter, Linkedin, Youtube, Github } from 'lucide-react';
 
 const links = {
   Platform: [
@@ -23,9 +23,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center">
-                <GraduationCap size={20} className="text-white" />
-              </div>
+              <img src="/logo.png" alt="Aikya Academy" className="h-10 w-auto object-contain brightness-0 invert" />
               <span className="font-extrabold text-lg text-white tracking-tight">AikyaAcademy</span>
             </Link>
             <p className="text-sm leading-relaxed max-w-xs text-white/50">
