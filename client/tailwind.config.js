@@ -40,7 +40,7 @@ export default {
         },
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #0bb2b2 0%, #e25c99 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #0bb2b2 0%, #2c3a8a 100%)',
         'gradient-hero':    'linear-gradient(135deg, #2c3a8a 0%, #0bb2b2 100%)',
         'gradient-card':    'linear-gradient(135deg, #0bb2b2 0%, #2c3a8a 100%)',
       },
