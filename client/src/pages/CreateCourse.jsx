@@ -5,7 +5,14 @@ import toast from 'react-hot-toast';
 import { courseApi } from '../api';
 
 const LEVELS     = ['beginner','intermediate','advanced'];
-const CATEGORIES = ['Web Development','Data Science','Design','Business','Marketing','Photography','Music','Fitness'];
+const CATEGORIES = [
+  'Post-Doctoral Fellowship in Reproductive Medicine',
+  'Fellowship in Reproductive Medicine',
+  'Master Advanced OB-GYN Skills',
+  'Fellowship in Gynecological Laparoscopy',
+  'Certification Courses in Gynec/Obstetrics',
+  'Certification Course for Clinicians (Endoscopy & Reproductive Medicine)',
+];
 
 export default function CreateCourse() {
   const navigate = useNavigate();

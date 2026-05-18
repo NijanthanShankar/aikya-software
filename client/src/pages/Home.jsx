@@ -9,14 +9,12 @@ import CourseCard from '../components/course/CourseCard';
 import LiveSessionCard from '../components/live/LiveSessionCard';
 
 const CATEGORIES = [
-  { label: 'Web Dev',      emoji: '💻', color: 'from-blue-500 to-cyan-500' },
-  { label: 'Data Science', emoji: '📊', color: 'from-purple-500 to-pink-500' },
-  { label: 'Design',       emoji: '🎨', color: 'from-orange-400 to-pink-500' },
-  { label: 'Business',     emoji: '💼', color: 'from-green-500 to-teal-500' },
-  { label: 'Marketing',    emoji: '📈', color: 'from-red-500 to-orange-500' },
-  { label: 'Photography',  emoji: '📷', color: 'from-indigo-500 to-purple-600' },
-  { label: 'Music',        emoji: '🎵', color: 'from-yellow-400 to-orange-500' },
-  { label: 'Fitness',      emoji: '🏋️', color: 'from-teal-500 to-green-500' },
+  { label: 'Post-Doctoral Fellowship',    emoji: '🎓', color: 'from-teal-500 to-cyan-500' },
+  { label: 'Fellowship in Repro. Medicine', emoji: '🔬', color: 'from-primary-500 to-teal-600' },
+  { label: 'OB-GYN Skills',              emoji: '🏥', color: 'from-rose-400 to-red-500' },
+  { label: 'Gynec Laparoscopy',          emoji: '🩺', color: 'from-blue-500 to-indigo-500' },
+  { label: 'Gynec/Obs Certification',    emoji: '📋', color: 'from-orange-400 to-rose-500' },
+  { label: 'Endoscopy & Repro. Medicine',emoji: '🔭', color: 'from-violet-500 to-purple-600' },
 ];
 
 const STATS = [

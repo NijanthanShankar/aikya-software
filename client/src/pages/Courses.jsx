@@ -6,7 +6,14 @@ import CourseCard from '../components/course/CourseCard';
 import { PageSpinner } from '../components/common/Spinner';
 
 const LEVELS      = ['beginner', 'intermediate', 'advanced'];
-const CATEGORIES  = ['Web Development','Data Science','Design','Business','Marketing','Photography','Music','Fitness'];
+const CATEGORIES = [
+  'Post-Doctoral Fellowship in Reproductive Medicine',
+  'Fellowship in Reproductive Medicine',
+  'Master Advanced OB-GYN Skills',
+  'Fellowship in Gynecological Laparoscopy',
+  'Certification Courses in Gynec/Obstetrics',
+  'Certification Course for Clinicians (Endoscopy & Reproductive Medicine)',
+];
 const SORTS       = [
   { value: 'createdAt',  label: 'Newest' },
   { value: 'popular',   label: 'Most Popular' },

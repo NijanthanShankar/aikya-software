@@ -22,8 +22,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2">
-            <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <span className="font-extrabold text-xl text-white tracking-tight">Aikya<span className="text-primary-400">Academy</span></span>
+            <Link to="/" className="inline-block mb-4">
+              <div className="bg-white rounded-xl px-3 py-1.5 inline-flex items-center">
+                <img src="/logo.png" alt="Aikya Academy" className="h-10 w-auto object-contain" />
+              </div>
             </Link>
             <p className="text-sm leading-relaxed max-w-xs text-white/50">
               Fellowship programs and certification courses in Reproductive Medicine, Gynecology, and Laparoscopy by Aikya Fertility & Research Centre.
