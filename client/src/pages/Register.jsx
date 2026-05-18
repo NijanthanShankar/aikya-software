@@ -40,8 +40,8 @@ export default function Register() {
         <div className="absolute -top-32 -right-32 w-80 h-80 bg-primary-500/25 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-violet-600/15 rounded-full blur-3xl" />
         <div className="relative text-white">
-          <div className="mb-6">
-            <img src="/logo.png" alt="Aikya Academy" className="h-14 w-auto object-contain" />
+          <div className="mb-6 text-center">
+            <span className="font-extrabold text-4xl text-white tracking-tight">Aikya<span className="text-primary-300">Academy</span></span>
           </div>
           <h2 className="text-3xl font-extrabold mb-4 tracking-tight leading-snug">Start Your<br />Learning Journey</h2>
           <p className="text-white/55 leading-relaxed text-sm">
@@ -64,7 +64,7 @@ export default function Register() {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-10 overflow-y-auto">
         <div className="w-full max-w-md">
           <Link to="/" className="flex items-center gap-2.5 mb-8 lg:hidden justify-center">
-            <img src="/logo.png" alt="Aikya Academy" className="h-10 w-auto object-contain" />
+            <img src="/logo.png" alt="Aikya Academy" className="h-10 w-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
             <span className="font-extrabold text-xl text-ink">AikyaAcademy</span>
           </Link>
 

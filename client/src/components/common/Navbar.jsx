@@ -43,7 +43,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src="/logo.png" alt="Aikya Academy" className="h-9 w-auto object-contain" />
+            <img src="/logo.png" alt="Aikya Academy" className="h-9 w-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
             <span className="font-extrabold text-lg text-ink tracking-tight hidden sm:block">
               Aikya<span className="text-gradient">Academy</span>
             </span>
