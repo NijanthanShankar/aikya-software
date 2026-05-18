@@ -41,7 +41,7 @@ export default function Register() {
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-violet-600/15 rounded-full blur-3xl" />
         <div className="relative text-white">
           <div className="mb-6">
-            <img src="/logo.png" alt="Aikya Academy" className="h-14 w-auto object-contain brightness-0 invert" />
+            <img src="/logo.png" alt="Aikya Academy" className="h-14 w-auto object-contain" />
           </div>
           <h2 className="text-3xl font-extrabold mb-4 tracking-tight leading-snug">Start Your<br />Learning Journey</h2>
           <p className="text-white/55 leading-relaxed text-sm">

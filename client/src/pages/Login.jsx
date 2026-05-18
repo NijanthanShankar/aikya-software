@@ -35,7 +35,7 @@ export default function Login() {
         <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl" />
         <div className="relative text-center text-white max-w-sm">
           <div className="mb-6">
-            <img src="/logo.png" alt="Aikya Academy" className="h-16 w-auto object-contain brightness-0 invert mx-auto" />
+            <img src="/logo.png" alt="Aikya Academy" className="h-16 w-auto object-contain mx-auto" />
           </div>
           <h2 className="text-3xl font-extrabold mb-4 tracking-tight">Continue Your Learning Journey</h2>
           <p className="text-white/60 leading-relaxed">Access thousands of courses, join live sessions, and track your progress.</p>
