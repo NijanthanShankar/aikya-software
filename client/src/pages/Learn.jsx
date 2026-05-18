@@ -132,10 +132,29 @@ export default function Learn() {
             <>
               {/* Video */}
               {currentLesson.type === 'video' && (
-                <div className="bg-black aspect-video w-full">
+                <div className="bg-black aspect-video w-full relative select-none"
+                  onContextMenu={(e) => e.preventDefault()}>
                   <video key={currentLesson.id} controls className="w-full h-full"
                     src={`/api/lessons/${currentLesson.id}/stream`}
-                    onEnded={() => markComplete(currentLesson.id)} />
+                    onEnded={() => markComplete(currentLesson.id)}
+                    controlsList="nodownload nofullscreen noremoteplayback"
+                    disablePictureInPicture
+                    onKeyDown={(e) => e.preventDefault()} />
+                  {/* Watermark */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="absolute text-white/10 text-xs font-semibold whitespace-nowrap select-none"
+                        style={{
+                          top: `${15 + i * 16}%`,
+                          left: `${(i % 2 === 0 ? 5 : 40)}%`,
+                          transform: 'rotate(-20deg)',
+                          fontSize: '11px',
+                          letterSpacing: '0.05em',
+                        }}>
+                        {user?.email} • Aikya Academy
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

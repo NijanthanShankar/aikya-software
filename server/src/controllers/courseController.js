@@ -156,7 +156,9 @@ exports.publishCourse = async (req, res) => {
     if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
-    course.status = course.status === 'published' ? 'draft' : 'published';
+    const wasPublished = course.status === 'published';
+    course.status = wasPublished ? 'draft' : 'published';
+    if (!wasPublished && !course.publishedAt) course.publishedAt = new Date();
     await course.save();
     res.json({ course });
   } catch (err) {

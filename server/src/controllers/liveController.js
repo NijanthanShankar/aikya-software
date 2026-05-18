@@ -1,4 +1,4 @@
-const { LiveSession, User } = require('../models');
+const { LiveSession, User, Lesson, Module, Course } = require('../models');
 
 const createSession = async (req, res) => {
   try {
@@ -78,7 +78,40 @@ const endSession = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
     session.status = 'ended';
+    const { recordingUrl } = req.body;
+    if (recordingUrl) session.recordingUrl = recordingUrl;
     await session.save();
+
+    // Auto-add recording as a lesson if session is linked to a course
+    if (recordingUrl && session.courseId && !session.recordingAddedToCourse) {
+      try {
+        let module = await Module.findOne({ courseId: session.courseId, title: 'Live Session Recordings' });
+        if (!module) {
+          const count = await Module.countDocuments({ courseId: session.courseId });
+          module = await Module.create({
+            title: 'Live Session Recordings',
+            courseId: session.courseId,
+            order: count,
+          });
+        }
+        const lessonCount = await Lesson.countDocuments({ moduleId: module._id });
+        await Lesson.create({
+          title: session.title,
+          description: session.description || `Recording of live session on ${new Date(session.scheduledAt).toLocaleDateString()}`,
+          type: 'video',
+          videoUrl: recordingUrl,
+          moduleId: module._id,
+          courseId: session.courseId,
+          order: lessonCount,
+        });
+        await Course.findByIdAndUpdate(session.courseId, { $inc: { totalLessons: 1 } });
+        session.recordingAddedToCourse = true;
+        await session.save();
+      } catch (lessonErr) {
+        console.error('Failed to auto-add recording as lesson:', lessonErr.message);
+      }
+    }
+
     res.json({ message: 'Session ended', session });
   } catch (err) {
     res.status(500).json({ message: 'Failed to end session', error: err.message });

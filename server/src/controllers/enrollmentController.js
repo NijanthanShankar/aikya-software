@@ -10,7 +10,9 @@ exports.enrollFree = async (req, res) => {
     const existing = await Enrollment.findOne({ userId: req.user._id, courseId: course._id });
     if (existing) return res.status(400).json({ message: 'Already enrolled' });
 
-    const enrollment = await Enrollment.create({ userId: req.user._id, courseId: course._id });
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 60);
+    const enrollment = await Enrollment.create({ userId: req.user._id, courseId: course._id, expiresAt });
     await Course.findByIdAndUpdate(course._id, { $inc: { totalEnrollments: 1 } });
     res.status(201).json({ enrollment });
   } catch (err) {

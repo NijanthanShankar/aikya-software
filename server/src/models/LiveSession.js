@@ -12,6 +12,8 @@ const liveSessionSchema = new mongoose.Schema({
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
   instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   isPublic: { type: Boolean, default: true },
+  recordingUrl: { type: String },
+  recordingAddedToCourse: { type: Boolean, default: false },
 }, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
 module.exports = mongoose.model('LiveSession', liveSessionSchema);

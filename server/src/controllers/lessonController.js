@@ -36,6 +36,9 @@ exports.getLessonContent = async (req, res) => {
       if (!enrollment && !isInstructor && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Enroll in this course to access this lesson' });
       }
+      if (enrollment && enrollment.expiresAt && enrollment.expiresAt < new Date()) {
+        return res.status(403).json({ message: 'Your access to this course has expired' });
+      }
     }
     res.json({ lesson });
   } catch (err) {
@@ -98,6 +101,9 @@ exports.streamVideo = async (req, res) => {
       const isInstructor = course.instructor.toString() === req.user.id;
       if (!enrollment && !isInstructor && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
+      }
+      if (enrollment && enrollment.expiresAt && enrollment.expiresAt < new Date()) {
+        return res.status(403).json({ message: 'Your access to this course has expired' });
       }
     }
     const videoPath = path.join(__dirname, '../../uploads/videos', lesson.videoKey);

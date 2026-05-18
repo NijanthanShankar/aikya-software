@@ -19,6 +19,7 @@ const courseSchema = new mongoose.Schema({
   rating: { type: Number, default: 0 },
   totalEnrollments: { type: Number, default: 0 },
   instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  publishedAt: { type: Date },
 }, { timestamps: true, toJSON: { virtuals: true, transform: (doc, ret) => { delete ret._id; delete ret.__v; return ret; } } });
 
 module.exports = mongoose.model('Course', courseSchema);
