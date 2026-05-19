@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, ChevronDown, ChevronUp, Upload, Video, FileText, HelpCircle, GripVertical } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Upload, Video, FileText, HelpCircle, GripVertical, Settings, BookOpen, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { moduleApi, lessonApi } from '../api';
+import { moduleApi, lessonApi, courseApi } from '../api';
 import { PageSpinner } from '../components/common/Spinner';
+
+const LEVELS     = ['beginner', 'intermediate', 'advanced'];
+const CATEGORIES = [
+  'Post-Doctoral Fellowship in Reproductive Medicine',
+  'Fellowship in Reproductive Medicine',
+  'Master Advanced OB-GYN Skills',
+  'Fellowship in Gynecological Laparoscopy',
+  'Certification Courses in Gynec/Obstetrics',
+  'Certification Course for Clinicians (Endoscopy & Reproductive Medicine)',
+];
 
 export default function EditCourse() {
   const { courseId } = useParams();
@@ -11,21 +21,57 @@ export default function EditCourse() {
   const [course, setCourse]         = useState(null);
   const [modules, setModules]       = useState([]);
   const [loading, setLoading]       = useState(true);
+  const [tab, setTab]               = useState('content');
   const [expanded, setExpanded]     = useState({});
   const [newModTitle, setNewModTitle] = useState('');
   const [addingMod, setAddingMod]   = useState(false);
   const [addingLesson, setAddingLesson] = useState({});
   const [lessonForms, setLessonForms]   = useState({});
+  const [settingsForm, setSettingsForm] = useState({ title: '', shortDescription: '', description: '', category: '', level: 'beginner', language: 'English', isFree: false, price: '', discountPrice: '' });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     fetch(`/api/courses/${courseId}/full`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
       .then((r) => r.json())
-      .then(({ course }) => { setCourse(course); setModules(course?.modules || []); })
+      .then(({ course }) => {
+        setCourse(course);
+        setModules(course?.modules || []);
+        setSettingsForm({
+          title:            course?.title || '',
+          shortDescription: course?.shortDescription || '',
+          description:      course?.description || '',
+          category:         course?.category || '',
+          level:            course?.level || 'beginner',
+          language:         course?.language || 'English',
+          isFree:           course?.isFree || false,
+          price:            course?.price != null ? String(course.price) : '',
+          discountPrice:    course?.discountPrice != null ? String(course.discountPrice) : '',
+        });
+      })
       .catch(() => toast.error('Failed to load course'))
       .finally(() => setLoading(false));
   }, [courseId]);
+
+  const SF = (key) => (e) => setSettingsForm((p) => ({ ...p, [key]: e.target.value }));
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    if (!settingsForm.title.trim()) return toast.error('Title is required');
+    setSavingSettings(true);
+    try {
+      const payload = new FormData();
+      Object.entries(settingsForm).forEach(([k, v]) => payload.append(k, v));
+      const { data } = await courseApi.update(courseId, payload);
+      setCourse(data.course);
+      toast.success('Course settings saved');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save settings');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
 
   const addModule = async (e) => {
     e.preventDefault();
@@ -89,15 +135,126 @@ export default function EditCourse() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-ink">Course Content</h1>
+          <h1 className="text-2xl font-extrabold text-ink">Edit Course</h1>
           {course && <p className="text-ink-muted mt-1 text-sm">{course.title}</p>}
         </div>
         <button onClick={() => navigate('/instructor')} className="btn btn-secondary btn-md">← Back</button>
       </div>
 
-      <div className="space-y-3">
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-surface-100 rounded-xl p-1 w-fit">
+        <button onClick={() => setTab('content')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'content' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}>
+          <BookOpen size={14} /> Content
+        </button>
+        <button onClick={() => setTab('settings')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'settings' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted hover:text-ink'}`}>
+          <Settings size={14} /> Settings & Pricing
+        </button>
+      </div>
+
+      {/* Settings panel */}
+      {tab === 'settings' && (
+        <form onSubmit={handleSaveSettings} className="space-y-5">
+          {/* Basic info */}
+          <div className="card p-6 space-y-4">
+            <h2 className="font-semibold text-ink flex items-center gap-2"><BookOpen size={16} className="text-primary-600" />Basic Information</h2>
+            <div>
+              <label className="label">Course Title *</label>
+              <input value={settingsForm.title} onChange={SF('title')} className="field" required />
+            </div>
+            <div>
+              <label className="label">Short Description <span className="text-ink-light font-normal">(shown on card)</span></label>
+              <input value={settingsForm.shortDescription} onChange={SF('shortDescription')} className="field" maxLength={200} />
+            </div>
+            <div>
+              <label className="label">Full Description *</label>
+              <textarea value={settingsForm.description} onChange={SF('description')} className="field min-h-[100px] resize-y" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Category</label>
+                <select value={settingsForm.category} onChange={SF('category')} className="field">
+                  <option value="">Select…</option>
+                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Level</label>
+                <select value={settingsForm.level} onChange={SF('level')} className="field">
+                  {LEVELS.map((l) => <option key={l} value={l} className="capitalize">{l[0].toUpperCase() + l.slice(1)}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="label">Language</label>
+              <input value={settingsForm.language} onChange={SF('language')} className="field" />
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="card p-6 space-y-4">
+            <h2 className="font-semibold text-ink flex items-center gap-2"><DollarSign size={16} className="text-primary-600" />Pricing</h2>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <button type="button"
+                onClick={() => setSettingsForm((p) => ({ ...p, isFree: !p.isFree, price: !p.isFree ? '0' : p.price }))}
+                className={`relative w-11 h-6 rounded-full transition-colors ${settingsForm.isFree ? 'bg-primary-600' : 'bg-surface-200'}`}>
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${settingsForm.isFree ? 'left-6' : 'left-1'}`} />
+              </button>
+              <div>
+                <p className="text-sm font-medium text-ink">Free course</p>
+                <p className="text-xs text-ink-muted">Students can enroll at no cost</p>
+              </div>
+            </label>
+
+            {!settingsForm.isFree && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label">Price (₹)</label>
+                  <input type="number" value={settingsForm.price} onChange={SF('price')} className="field" placeholder="999" min="0" />
+                </div>
+                <div>
+                  <label className="label">Discount Price (₹) <span className="text-ink-light font-normal">optional</span></label>
+                  <input type="number" value={settingsForm.discountPrice} onChange={SF('discountPrice')} className="field" placeholder="799" min="0" />
+                </div>
+              </div>
+            )}
+
+            {/* Price preview */}
+            {!settingsForm.isFree && settingsForm.price && (
+              <div className="flex items-baseline gap-2 p-3 bg-surface-50 rounded-xl">
+                <span className="text-lg font-bold text-ink">
+                  ₹{Number(settingsForm.discountPrice || settingsForm.price).toLocaleString('en-IN')}
+                </span>
+                {settingsForm.discountPrice && parseFloat(settingsForm.discountPrice) < parseFloat(settingsForm.price) && (
+                  <>
+                    <span className="text-sm text-ink-light line-through">₹{Number(settingsForm.price).toLocaleString('en-IN')}</span>
+                    <span className="badge badge-red">
+                      {Math.round((1 - parseFloat(settingsForm.discountPrice) / parseFloat(settingsForm.price)) * 100)}% off
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+            {settingsForm.isFree && (
+              <div className="p-3 bg-emerald-50 rounded-xl">
+                <span className="text-lg font-bold text-emerald-600">Free</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button type="submit" disabled={savingSettings} className="btn btn-primary btn-md px-8">
+              {savingSettings ? 'Saving…' : 'Save Settings'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Content panel */}
+      {tab === 'content' && <div className="space-y-3">
         {modules.map((mod, mi) => (
           <div key={mod.id} className="card overflow-hidden">
             <div
@@ -198,7 +355,7 @@ export default function EditCourse() {
             <Plus size={17} /> Add Module
           </button>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
